@@ -1,0 +1,43 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "MyHealth",
+  "authors": [ "Microsoft" ],
+
+  "testRunner": "xunit",
+
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0",
+      "type": "platform"
+    },
+    "MyHealth.API": "1.0.0-*",
+    "NETStandard.Library": "1.6.0",
+    "Microsoft.AspNetCore.TestHost": "1.0.0",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0",
+    "Acheve.AspNetCore.TestHost.Security": "1.0.0",
+    "xunit": "2.1.0",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "FluentAssertions": "4.4.0",
+    "Microsoft.EntityFrameworkCore": "1.0.0"
+  },
+
+  "commands": {
+    "test": "dotnet-test-xunit",
+    "testxml": "dotnet-test-xunit -xml TestResults.xml"
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net45+win8"
+      ]
+    }
+  },
+
+  "buildOptions": {
+    "copyToOutput": {
+      "include": [ "appsettings.json" ]
+    }
+  }
+}

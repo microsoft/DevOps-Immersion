@@ -1,0 +1,11 @@
+{
+  "android": {
+    "release": {
+      "keystore": ".\\healthclinic-dummy.keystore",
+      "storePassword": "123456",
+      "alias": "healthclinic-doctors-release",
+      "password": "123456",
+      "keystoreType": "jks"
+    }
+  }
+}

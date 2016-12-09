@@ -1,0 +1,351 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceplanSKU": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Free"
+    },
+    "serviceplanWorkerSize": {
+      "type": "string",
+      "allowedValues": [
+        "0",
+        "1",
+        "2"
+      ],
+      "defaultValue": "0"
+    }
+  },
+  "variables": {
+    "webPackage": "https://devopsimmersion.blob.core.windows.net/artifacts/healthclinic.zip",
+    "sqlserverName": "[concat('sql', uniqueString(resourceGroup().id))]",
+    "serviceplanName": "[concat('serviceplan', uniqueString(resourceGroup().id))]",
+    "healthclinicdevName": "[concat('healthclinicdev', uniqueString(resourceGroup().id))]",
+    "healthclinicproName": "[concat('healthclinicpro', uniqueString(resourceGroup().id))]",
+    "healthclinic": "[concat('healthclinic', uniqueString(resourceGroup().id))]",
+    "sqlserverAdminLogin": "healthclinic",
+    "sqlserverAdminLoginPassword": "P2ssw0rd",
+    "databaseNamePro": "databasepro",
+    "databaseNameDev": "databasedev",
+    "databaseName": "database"
+  },
+  "resources": [
+    {
+      "name": "[variables('sqlserverName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "sqlserver"
+      },
+      "properties": {
+        "administratorLogin": "[variables('sqlserverAdminLogin')]",
+        "administratorLoginPassword": "[variables('sqlserverAdminLoginPassword')]"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('sqlserverName'))]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "[variables('serviceplanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-06-01",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "serviceplan"
+      },
+      "properties": {
+        "name": "[variables('serviceplanName')]",
+        "sku": "[parameters('serviceplanSKU')]",
+        "workerSize": "[parameters('serviceplanWorkerSize')]",
+        "numberOfWorkers": 1
+      }
+    },
+    {
+      "name": "[variables('healthclinicdevName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', variables('serviceplanName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('serviceplanName'))]": "Resource",
+        "displayName": "healthclinicdev"
+      },
+      "properties": {
+        "name": "[variables('healthclinicdevName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('serviceplanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "connectionstrings",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', variables('healthclinicdevName'))]"
+          ],
+          "properties": {
+            "DefaultConnection": {
+              "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseNameDev'), ';User Id=', variables('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', variables('sqlserverAdminLoginPassword'), ';')]",
+              "type": "SQLServer"
+            }
+          }
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', variables('healthclinicdevName'))]"
+          ],
+          "tags": {
+            "displayName": "AppSettings"
+          },
+          "properties": {
+            "ApplicationInsights:InstrumentationKey": "[reference(concat('Microsoft.Insights/components/', variables('healthclinicdevName'))).InstrumentationKey]"
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "name": "[variables('healthclinicdevName')]",
+      "type": "Microsoft.Insights/components",
+      "location": "Central US",
+      "dependsOn": [
+        "[concat('Microsoft.Web/sites/', variables('healthclinicdevName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('healthclinicdevName'))]": "Resource",
+        "displayName": "AppInsightsComponent"
+      },
+      "properties": {
+        "ApplicationId": "[variables('healthclinicdevName')]"
+      }
+    },
+    {
+      "name": "[variables('healthclinicproName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', variables('serviceplanName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('serviceplanName'))]": "Resource",
+        "displayName": "healthclinicpro"
+      },
+      "properties": {
+        "name": "[variables('healthclinicproName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('serviceplanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "connectionstrings",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', variables('healthclinicproName'))]"
+          ],
+          "properties": {
+            "DefaultConnection": {
+              "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseNamePro'), ';User Id=', variables('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', variables('sqlserverAdminLoginPassword'), ';')]",
+              "type": "SQLServer"
+            }
+          }
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', variables('healthclinicproName'))]"
+          ],
+          "tags": {
+            "displayName": "AppSettings"
+          },
+          "properties": {
+            "ApplicationInsights:InstrumentationKey": "[reference(concat('Microsoft.Insights/components/', variables('healthclinicproName'))).InstrumentationKey]"
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "name": "[variables('healthclinicproName')]",
+      "type": "Microsoft.Insights/components",
+      "location": "Central US",
+      "dependsOn": [
+        "[concat('Microsoft.Web/sites/', variables('healthclinicproName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('healthclinicproName'))]": "Resource",
+        "displayName": "AppInsightsComponent"
+      },
+      "properties": {
+        "ApplicationId": "[variables('healthclinicproName')]"
+      }
+    },
+    {
+      "name": "[variables('healthclinic')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', variables('serviceplanName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('serviceplanName'))]": "Resource",
+        "displayName": "healthclinic"
+      },
+      "properties": {
+        "name": "[variables('healthclinic')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('serviceplanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "connectionstrings",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', variables('healthclinic'))]",
+            "[concat('Microsoft.Web/sites/', variables('healthclinic'), '/Extensions/MSDeploy')]"
+          ],
+          "properties": {
+            "DefaultConnection": {
+              "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', variables('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', variables('sqlserverAdminLoginPassword'), ';')]",
+              "type": "SQLServer"
+            }
+          }
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', variables('healthclinic'))]",
+            "[concat('Microsoft.Web/sites/', variables('healthclinic'), '/Extensions/MSDeploy')]"
+          ],
+          "tags": {
+            "displayName": "AppSettings"
+          },
+          "properties": {
+            "ApplicationInsights:InstrumentationKey": "[reference(concat('Microsoft.Insights/components/', variables('healthclinic'))).InstrumentationKey]"
+          }
+        },
+        {
+            "name": "MSDeploy",
+            "type": "extensions",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2015-08-01",
+            "dependsOn": [
+                "[concat('Microsoft.Web/sites/', variables('healthclinic'))]"
+            ],
+            "tags": {
+                "displayName": "WebDeploy"
+            },
+          "properties": {
+            "packageUri": "[variables('webPackage')]",
+            "dbType": "None",
+            "connectionString": "",
+            "setParameters": {
+
+            }
+          }
+        }
+
+      ]
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "name": "[variables('healthclinic')]",
+      "type": "Microsoft.Insights/components",
+      "location": "Central US",
+      "dependsOn": [
+        "[concat('Microsoft.Web/sites/', variables('healthclinic'))]"
+      ],
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('healthclinic'))]": "Resource",
+        "displayName": "AppInsightsComponent"
+      },
+      "properties": {
+        "ApplicationId": "[variables('healthclinic')]"
+      }
+    }
+  ],
+  "outputs": {
+    "location": {
+      "type": "string",
+      "value": "[resourceGroup().location]"
+    },
+    "websiteName": {
+      "type": "string",
+      "value": "[variables('healthclinic')]"
+    },
+    "websiteUrl": {
+      "type": "string",
+      "value": "[concat('https://', variables('healthclinic'), '.azurewebsites.net')]"
+    },
+    "websiteDevName": {
+      "type": "string",
+      "value": "[variables('healthclinicdevName')]"
+    },
+    "websiteDevUrl": {
+      "type": "string",
+      "value": "[concat('https://', variables('healthclinicdevName'), '.azurewebsites.net')]"
+    },
+    "websiteDevAppInsightsKey": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Insights/components/', variables('healthclinicdevName'))).InstrumentationKey]"
+    },
+    "websiteProName": {
+      "type": "string",
+      "value": "[variables('healthclinicproName')]"
+    },
+    "websiteProUrl": {
+      "type": "string",
+      "value": "[concat('https://', variables('healthclinicproName'), '.azurewebsites.net')]"
+    },
+    "websiteProAppInsightsKey": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Insights/components/', variables('healthclinicproName'))).InstrumentationKey]"
+    },
+    "AIDevInstrumentationName": {
+      "type": "string",
+      "value": "[variables('healthclinicdevName')]"
+    },
+    "AIProInstrumentationName": {
+      "type": "string",
+      "value": "[variables('healthclinicproName')]"
+    },
+    "AIDevInstrumentationKey": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Insights/components/', variables('healthclinicdevName'))).InstrumentationKey]"
+    },
+    "AIProInstrumentationKey": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Insights/components/', variables('healthclinicproName'))).InstrumentationKey]"
+    }
+  }
+}

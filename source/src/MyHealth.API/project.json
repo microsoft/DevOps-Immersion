@@ -1,0 +1,21 @@
+{
+  "authors": [
+    "Microsoft"
+  ],
+  "description": "HealthClinic.biz",
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "MyHealth.Data": "1.0.0-*",
+    "MyHealth.Model": "1.0.0-*",
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  }
+}
