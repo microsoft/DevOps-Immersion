@@ -26,12 +26,6 @@ begin with hosting a public website developed in ASP .NET 5 to azure and
 then leverage the services to integrate with our mobile and wearable
 apps built with Xamarin.
 
-####What is DevOps?####
-
-The DevOps is the union of people, process and products to enable
-continuous value to our end users. We would be using Visual Studio Team
-Services to plan, version control, builds and deployments of the
-projects.
 
 ###Pre-requisites for the lab###
 
