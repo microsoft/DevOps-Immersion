@@ -111,5 +111,9 @@ end DevOps.
 
 <a href="./labs/08.cross platform">Module 8: Cross Platform</a>
 
-  These module allows you to explore how VSTS works in a Linux environment with Visual Studio Team Services (VSTS), Eclipse and Team Explorer Everywhere. 
+  These module allows you to explore how VSTS works in a Linux environment with Visual Studio Team Services (VSTS), Eclipse and Team   Explorer Everywhere. 
+  
+   <a href="./labs/09.azure labs">Module 9: Azure Labs</a>
+   
+   This module will guide you on how you can easily build, debug, deploy, diagnose, and manage multi-platform, scalable apps and services on Azure with Visual Studio
 
