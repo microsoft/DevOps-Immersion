@@ -1,9 +1,9 @@
 # DevOps-Immersion
 
-##Introduction
+## Introduction
 
 
-###About the MyHealthClinic Project
+### About the MyHealthClinic Project
 
 The MyHealthClinic project contains 8 demos for different scenarios like
 websites, azure apps, mobile apps etc. To start with our DevOps, let us
@@ -12,13 +12,12 @@ then leverage the services to integrate with our mobile and wearable
 apps built with Xamarin.
 
 
-###Pre-requisites for the lab###
+### Pre-requisites for the lab
 
--   Visual Studio 2015 Update 3 or above. 
+- Visual Studio 2015 Update 3 or above. 
 
--   Latest [Microsoft Azure SDK] (https://azure.microsoft.com/en-us/downloads/)
+- Latest [Microsoft Azure SDK] (https://azure.microsoft.com/en-us/downloads/)
 
--   [.NET Core SDK](<https://www.microsoft.com/net/core#windows>) Visual Studio Tools.
+- [.NET Core SDK](<https://www.microsoft.com/net/core#windows>) Visual Studio Tools.
 
--   An active Microsoft Azure Subscription for deployments
-
+- An active Microsoft Azure Subscription for deployments
