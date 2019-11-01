@@ -5,7 +5,7 @@
     "postinstall": "bower install --config.interactive=false"
   },
   "dependencies": {
-    "bower": "~1.7.2",
+    "bower": "~1.8.8",
     "colors": "~1.1.2",
     "express": "~4.13.3",
     "gulp": "~3.9.0",
